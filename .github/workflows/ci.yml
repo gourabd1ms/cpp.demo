@@ -12,6 +12,26 @@ jobs:
           fetch-depth: 0
       - run: make
       - run: make test
+      - name: Ensure SonarQube Cloud project exists
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          http_code=$(curl -s -o /tmp/sonar_create.json -w "%{http_code}" -X POST \
+            -H "Authorization: Bearer $SONAR_TOKEN" \
+            "https://sonarqube.us/api/projects/create" \
+            --data-urlencode "organization=gourabd1ms" \
+            --data-urlencode "project=gourabd1ms_cpp_demo" \
+            --data-urlencode "name=cpp.demo")
+          echo "HTTP $http_code"
+          cat /tmp/sonar_create.json
+          if [ "$http_code" != "200" ] && [ "$http_code" != "201" ]; then
+            if grep -qi "already exist" /tmp/sonar_create.json; then
+              echo "Project already exists, continuing"
+            else
+              echo "Failed to create Sonar project"
+              exit 1
+            fi
+          fi
       - name: SonarQube Cloud Scan
         uses: SonarSource/sonarqube-scan-action@v5
         env:
