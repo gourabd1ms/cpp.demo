@@ -18,7 +18,7 @@ jobs:
         run: |
           check_code=$(curl -s -o /tmp/sonar_check.json -w "%{http_code}" \
             -H "Authorization: Bearer $SONAR_TOKEN" \
-            "https://sonarqube.us/api/projects/search?projects=gourabd1ms_cpp.demo")
+            "https://sonarqube.us/api/projects/search?organization=gourabd1ms&projects=gourabd1ms_cpp.demo")
           exists=$(python3 -c "import json;print(json.load(open('/tmp/sonar_check.json'))['paging']['total'])" 2>/dev/null || echo 0)
           if [ "$check_code" = "200" ] && [ "$exists" != "0" ]; then
             echo "Project already exists, skipping creation"
